@@ -1,10 +1,7 @@
 # Automated Operations and Maintenance
 
-> Personal notes on the path from a single Linux box to container orchestration: **Linux → Shell → Docker → Kubernetes**.
-> Written while learning and practising; every command here was run on my own machines first.
-
-> 运维方向的学习笔记仓库，一条从单机到编排的完整链路：
-> **Linux 基础 → Shell 编程 → Docker 容器化 → Kubernetes 编排**。
+> 运维方向学习笔记仓库，涵盖从单机到编排的完整技术链路：**Linux 基础 → Shell 编程 → Docker 容器化 → Kubernetes 编排 → 可观测性**。  
+> 所有命令与配置均在自有主机与多节点集群（RHEL 10 / K3s / Kubeadm）实操验证。
 
 ## 目录
 
@@ -13,7 +10,6 @@
 - [后续计划](#后续计划)
 - [笔记版式约定](#笔记版式约定)
 - [版本基线](#版本基线)
-- [怎么用这份笔记](#怎么用这份笔记)
 - [写在最后](#写在最后)
 
 ---
@@ -21,24 +17,23 @@
 ## 仓库内容
 
 ```text
-Linux/           Linux 基础与 Shell 编程
-container/       容器化与容器编排
-common server/   常用服务
-Log system/      日志与可观测
+Linux/           Linux 基础、Shell 编程、排障手册与 Ansible 自动化
+container/       Docker 容器化与 Kubernetes 编排
+common server/   常用基础服务（NFS 等）
+Log system/      监控指标与可观测体系
 ```
 
-| 文件 | 规模 | 覆盖内容 |
-|------|------|---------|
-| [`Linux-note.md`](Linux/Linux-note.md) | 3326 行 **权限管理**（chmod / chown、属主属组、数字与符号模式、umask、setuid·setgid·sticky、**ACL**、**SELinux 基础**、批量修复）、**文本三剑客**（grep / sed / awk、正则 BRE 与 ERE、管道符）、find 查找、**文件系统与磁盘**（tar / gzip·bzip2·xz、`/dev` 设备名、lsblk、MBR 与 GPT、fdisk 实操、xfs / ext4、mount·umount、`/etc/fstab`、swap、autofs、LVM PV·VG·LV 与扩容）、运行级别与 grub2 引导、**NFS 挂载**、**进程与服务管理**（top / ps / pstree / 前后台调度 / 信号 / nice·renice / systemctl / ss / journalctl 与日志持久化 / tuned 调优）、**软件包管理**（RPM 查询、yum / dnf 与本地源、源码编译、Flatpak 仓库与安装、cron / at / systemd timer）、**网络与安全**（nmcli 配置 IPv4/IPv6、`/etc/hosts` 解析、firewalld、SSH 密钥与 scp/sftp、时间同步）；**Shell 脚本基础**（shebang、if·test·`[]`、for·while、位置参数、命令输出）；进阶专题：退出登录后任务中断的原因与解法 |
-| [`Linux-note-fixlog.md`](Linux/Linux-note-fixlog.md) | — | 两次结构性问题处理复盘：问题清单 / 根因 / 处理方式 + 踩坑沉淀 + 后续维护检查清单 |
-| [`troubleshooting.md`](Linux/troubleshooting.md) | 397 行 | **Linux 排障手册**（按症状反查）：权限与属主、文件与目录操作、文本三剑客、磁盘 / 挂载 / LVM（含 `/etc/fstab` 污染 SELinux 标签导致开机根分区只读的完整事故复盘）、进程服务与日志、防火墙与网络、登录会话与长任务、用户与密码 |
-| [`ansible.md`](Linux/ansible.md) | 1273 行 | **Ansible 自动化（RHCE EX294 / RHEL 10）**：架构与安装（控制节点、ansible.cfg 优先级、inventory 分组与变量）、受管节点（SSH 密钥分发、sudo 提权、ad-hoc 命令与 shell 脚本）、Playbook（YAML 结构、幂等性、`--syntax-check`/`-C -D` 验证、become 提权）、变量与事实（22 级优先级、register、facts、magic variables、**Ansible Vault**）、控制流（loop / when / handlers / block·rescue·always）、**常用模块十大类**（dnf / service / firewalld / 文件内容 / 存储 / 用户 / cron / SELinux / 归档 / template+Jinja2）、Roles 与 Collections（目录结构、import vs include、Galaxy、**RHEL System Roles**）、项目组织（group_vars / host_vars、forks 并发、serial 滚动）、故障处理（-vvv、常见错误、ansible-doc）、考试要点清单 |
-| [`shell-note-zh.md`](Linux/shell-note-zh.md) | 964 行 | Shell 编程中文版：shebang、Bash 特性、父 shell 与子 shell 执行环境、变量、字符串操作、命令、脚本开发（函数 / 运算 / 条件 / 循环） |
-| [`shell.md`](Linux/shell.md) | 842 行 | 英文原稿 |
-| [`docker-note.md`](container/docker-note.md) | 2462 行 | 安装、Docker 结构与镜像原理、常用命令、容器卷、Dockerfile（含分层缓存与构建实战）、Docker 网络（docker0 / veth pair / 自定义网络）、Compose、Swarm 集群与 stack/secret |
-| [`k8s-note.md`](container/k8s-note.md) | 3550 行 | 基础概念与架构 → kubeadm 部署集群（含 Calico CNI、Dashboard、k9s）→ 资源清单 / Namespace / Pod 生命周期 / Deployment（含生产级 web 部署实战）/ Service / Ingress / 存储（PV·PVC·SC·ConfigMap·Secret）/ 调度 / kubectl 排障工具箱 / 资源治理 → 进阶专题（HPA、SQL 上 K8s 可行性、StatefulSet、Job·DaemonSet·CronJob、安全认证鉴权准入与 RBAC（含 CI/CD 凭证实战）、Helm 与生态组件、证书续期与 etcd 备份） |
-| [`NFS.md`](common%20server/NFS.md) | 1018 行 | NFS 共享存储：NFS 与 RPC/rpcbind 的端口注册原理、版本演进（v2 → v4.2）、安装部署与防火墙 / SELinux、`/etc/exports` 语法与参数全表、客户端挂载选项、fstab 与 autofs 自动挂载、root_squash 与 UID 映射的权限模型、14 条排障速查、与 K8s PV / StorageClass 的联动、性能与安全加固 |
-| [`Prometheus.md`](Log%20system/Prometheus.md) | 1788 行 | 指标监控体系：四类数据选型边界 → 数据模型（序列唯一性 / 四种指标类型 / 高基数代价）→ Pull 机制（target·endpoint·exporter 三概念区分 / 四种服务暴露 / node_exporter 与 textfile collector / 端口规划）→ 配置（scrape_configs、relabel 两个时机、recording vs alerting）→ TSDB 存储（Head 块与 WAL / 内存与磁盘估算 / retention 是启动参数）→ PromQL（必背算子 / 聚合分组 / 排障表达式 / 五个陷阱）→ 角色与集群（联邦 / remote write / 集群不等于高可用）→ K8s 部署（kube-prometheus-stack 六个组件与 2C2G 降配、Operator 四个 CRD、ServiceMonitor port 写 name 的坑、instance 与 job 的区分、K8s SD 的 endpoint 角色、relabel 去重与 labeldrop）→ Grafana（provisioning 固定 uid、Min step 陷阱、dashboard 迁移）→ 第三方应用（exporter 生态、client 库、RED 与 USE、nginx / Redis 实例、k8s charts 五件套、file_sd、三种方式引入 dashboard）→ 双机隧道监控实战 → 告警规则与 Alertmanager（分组抑制静默路由、inhibit 根因抑制、邮件排查）→ 排障速查 + 常见误区 |
+| 文件 | 行数 | 核心覆盖内容 |
+| :--- | :--- | :--- |
+| [`Linux/Linux-note.md`](Linux/Linux-note.md) | 3326 | **权限与安全**（chmod/chown、umask、ACL、SELinux）、**文本三剑客**（grep/sed/awk、正则）、**磁盘与存储**（fdisk/GPT、xfs/ext4、fstab、LVM 扩容、autofs、NFS）、**进程与服务**（systemd、journalctl、tuned、前后台与会话持久化）、**软件与网络**（dnf/源码编译/Flatpak、nmcli、firewalld、SSH）、**Shell 基础** |
+| [`Linux/Linux-note-fixlog.md`](Linux/Linux-note-fixlog.md) | — | 笔记结构性问题处理复盘：问题清单、根因分析、踩坑沉淀与维护检查清单 |
+| [`Linux/troubleshooting.md`](Linux/troubleshooting.md) | 397 | **Linux 排障手册（按症状反查）**：权限、文本处理、磁盘与 LVM（含 fstab 污染 SELinux 标签导致只读事故复盘）、进程服务、防火墙与网络、长任务会话 |
+| [`Linux/ansible.md`](Linux/ansible.md) | 1273 | **Ansible 自动化（RHCE EX294 / RHEL 10）**：架构与配置优先级、Inventory 与提权、Playbook 与幂等验证、22 级变量优先级与 Vault、控制流、十大常用模块、Roles 与 RHEL System Roles、并发滚动与排障 |
+| [`Linux/shell-note-zh.md`](Linux/shell-note-zh.md) | 964 | **Shell 编程（中文版）**：Bash 特性、父/子 Shell 执行环境、变量与字符串运算、条件/循环与函数开发（另有英文原稿 [`shell.md`](Linux/shell.md)，842 行） |
+| [`container/docker-note.md`](container/docker-note.md) | 2462 | 镜像分层原理、常用命令、数据卷、Dockerfile 构建与缓存优化、Docker 网络（docker0 / veth pair / 自定义网络）、Compose、Swarm 集群与 Secret |
+| [`container/k8s-note.md`](container/k8s-note.md) | 3550 | 架构与 kubeadm 部署（Calico/Dashboard/k9s）、核心资源（Pod/Deployment/Service/Ingress/存储/调度）、kubectl 排障工具箱、进阶专题（HPA、StatefulSet、Job/CronJob、RBAC 安全与 CI/CD 凭证、Helm、证书续期与 etcd 备份） |
+| [`common server/NFS.md`](common%20server/NFS.md) | 1018 | RPC/rpcbind 端口注册原理、NFSv2–v4.2 演进、部署与 SELinux/防火墙、`/etc/exports` 全参数、fstab/autofs 自动挂载、`root_squash` 权限模型、14 条排障速查、与 K8s PV/StorageClass 联动 |
+| [`Log system/Prometheus.md`](Log%20system/Prometheus.md) | 1788 | 四类可观测数据选型、数据模型与高基数代价、Pull 机制与 Exporter、TSDB 存储与内存估算、PromQL 算子与陷阱、K8s 部署（`kube-prometheus-stack` 2C2G 降配、ServiceMonitor 坑点）、Grafana 迁移、双机隧道监控实战、Alertmanager 路由抑制与排障 |
 | `LICENSE` | — | MIT License，Copyright (c) 2026 we1l |
 
 ---
@@ -46,76 +41,57 @@ Log system/      日志与可观测
 ## 建议阅读顺序
 
 ```text
-① Linux 基础        先能在一台机器上干活（目录、权限、用户、进程与会话）
-    │
-② Shell 编程        所有自动化入口
-    │
-③ Docker            单机容器化：镜像怎么分层、数据怎么存、网络怎么通
-    │
-④ Kubernetes        多机编排：声明式 API + 控制循环
-    │
-⑤ 可观测            部署完要知道「现在有没有事」——指标 / 日志 / 链路
+① Linux 基础 ──▶ ② Shell 编程 ──▶ ③ Docker ──▶ ④ Kubernetes ──▶ ⑤ 可观测
 ```
 
-> 跳过前两步直接上 K8s 也能学，但**排障时会卡在 Linux / Shell 层面**——比如 Pod 里 `curl` 不通，真正的原因可能是节点 iptables 桥接没开、或者脚本里变量没加引号。前两块是地基。
+1. **Linux 基础**：掌握单机目录、权限、进程与服务，是后续所有排障的地基（如 Pod 网络不通往往源于宿主机 iptables 桥接或变量未加引号）。
+2. **Shell 编程**：自动化脚本入口（`shell-note-zh.md` 与 `shell.md` 内容同源，读一份即可）。
+3. **Docker**：理解镜像分层、卷持久化与容器网络隔离。
+4. **Kubernetes**：掌握声明式 API、控制器循环与集群排障。
+5. **可观测性**：建立指标、日志与告警闭环。
 
-`shell.md` 与 `shell-note-zh.md` 内容同源，读一份即可；中文版在开头统一了术语（父 shell / 子 shell、内置命令、环境变量等首次出现标注英文）。
+---
 
 ## 后续计划
 
-现有笔记覆盖到「容器编排」这一层，在补方向：
-
 | 方向 | 待补内容 |
-|------|---------|
-| 常用服务 | 堡垒机、DNS、邮件服务器（NFS 已整理，见上表） |
-| Web 服务 | Nginx、Tomcat、LVS + Keepalived + HAProxy |
-| 数据库 | MySQL、Redis 等主流数据库的部署、备份与故障处理 |
-| 自动化 | Ansible、Jenkins |
-| 可观测 | Prometheus + Grafana 已整理（见上表）；**EFK / Loki 日志栈**、链路追踪（Jaeger）待补 |
+| :--- | :--- |
+| **常用服务** | 堡垒机、DNS、邮件服务器（NFS 已整理） |
+| **Web 服务** | Nginx、Tomcat、LVS + Keepalived + HAProxy |
+| **数据库** | MySQL、Redis 部署、备份与故障处理 |
+| **自动化** | Jenkins / CI-CD 流水线（Ansible 已整理） |
+| **可观测** | **EFK / Loki 日志栈**、链路追踪 Jaeger（Prometheus + Grafana 已整理） |
 
-> 补充无法确保及时，整理进度有限，所以更新不定期——目录文件就是当前进度。
+> 整理进度视实操节奏不定期更新，仓库目录即当前最新进度。
 
-## 笔记版式
+---
 
-所有笔记遵循同一套写法：
+## 笔记版式约定
 
-| 约定 | 说明 |
-|------|------|
-| **表格优先** | 概念对比、命令速查、参数说明一律用表格，方便横向对比与检索 |
-| **示例可抄** | 命令与 YAML 都带注释，标出「字段要改、坑」 |
-| **`>` 引用块 = 踩坑 / 纠偏** | 版本差异、常见误用、生产事故都写在引用块里 |
-| **每章小结** | 收尾复习时只看小结也能回忆起主干 |
+- **表格优先**：概念对比、命令速查、参数说明统一采用表格，便于横向检索。
+- **示例可抄**：命令与 YAML 均附注释，明确标注需修改的字段与常见坑点。
+- **引用块纠偏（`>`）**：集中记录版本差异、生产事故复盘与高频误用。
+- **每章小结**：提炼章节主干，支持快速复习与排障反查（直接搜索 `ImagePullBackOff`、`CrashLoopBackOff`、`OOMKilled`、`403 forbidden` 等症状关键词）。
 
-版本相关的结论会显式标注，例如 **1.24 起 ServiceAccount 不再自动生成 Secret token**、**1.25 起 PodSecurityPolicy 被 PodSecurity 取代**、**ValidatingAdmissionPolicy 1.30 GA**、**CronJob `timeZone` 1.27+ 稳定**。
+---
 
 ## 版本基线
 
-笔记里的实操步骤基于这套环境，版本不同可能有差异：
+| 组件 | 版本与环境说明 |
+| :--- | :--- |
+| **Kubernetes** | 引导部署示例（§3.1–3.4）基于 `kubeadm v1.20.9`；集群实战、安全与组件（§3.5 / §5–6）均在 **v1.33.x** 实操验证，1.27+ 破坏性变更已在正文单独标注 |
+| **CNI / Ingress** | `Calico v3.31.6`；`ingress-nginx v0.46.0`（2026-03 已退役，新集群建议迁移至 Gateway API，正文 §6.1 已注） |
+| **Dashboard / TUI** | Helm v3.x 部署（Dashboard 项目于 2026-01 归档，继任者为 Headlamp，正文已注）；终端管理工具 `k9s v0.51.0` |
+| **Docker** | `Docker Engine 27.3.1`、`Compose v2.29.1` |
+| **镜像源** | 示例默认配置国内镜像源（阿里云等），海外环境按需替换即可 |
 
-| 组件 | 版本 / 说明 |
-|------|------------|
-| Kubernetes | 安装与引导示例（§3.1–3.4）用 kubeadm v1.20.9；CLI 部分的老教程地址也保留其原貌。集群实战与排障（§3.5 Dashboard、CNI、§5.x 安全与 CI/CD、§6 组件）已在 **v1.33.x** 集群上跑过，1.27+ 的 Breaking Change 都在正文里单独标注。v1.33 现已 EOL（当前稳定线 v1.37，2026-08），作为学习环境的实操记录保留 |
-| CNI / Ingress | Calico v3.31.6（对应 k8s 1.33）、ingress-nginx v0.46.0（**2026-03 已退役**，正文 §6.1 标注，新集群走 Gateway API） |
-| Dashboard | Helm 安装 v3.x（k8s 1.27 起官方只维护 Helm 路线，单文件 `recommended.yaml` 已废弃）；**项目 2026-01 已归档**，SIG UI 继任者为 Headlamp（正文 §3.5 / 进阶 6.4 有说明） |
-| 终端 TUI | k9s v0.51.0 |
-| Docker | Engine 27.3.1、Compose v2.29.1 |
-| 镜像源 | 示例中给出国内镜像（阿里云等），境外拉不动时替换即可 |
+> **注意**：本仓库为个人实战笔记，非官方文档替代品；涉及数据清理、证书更新或 etcd 恢复等高危操作，请务必先在测试环境验证。
 
-## 怎么用这份笔记
-
-1. **系统学习**：按上面的顺序从头读，每章结尾有小结。
-2. **排障速查**：直接搜症状关键字——`ImagePullBackOff`、`CrashLoopBackOff`、`Pending` / `FailedScheduling`、`OOMKilled`、`403 forbidden` 等，都有对应的排查路径。
-
-> 说明：这是个人学习笔记，不是官方文档的替代品。笔记里的命令**先在测试环境验证再上生产**，尤其是涉及删除、证书、etcd 恢复的部分。
+---
 
 ## 写在最后
 
-> AI 让查资料和整理的速度快了很多，也让人不敢松懈。笔记里的每一条命令、每一份 yaml 都在自己的机器上跑过——实战这块没有捷径，这行做起来比学起来并不会轻松。
+> AI 加速了资料检索与结构整理，但运维实战没有捷径——仓库里的每一条命令、每一份配置都在自己的机器上跑通并排过坑。  
+> 技术更迭很快，保持动手与热爱，愿这些记录也能帮到正在路上的人。
 
-> 作为爱好者，天赋不算耀眼。就算想着笨鸟先飞，进度也常被各种事情打断。前辈留下的足迹和时代、技术的变迁走进去才有切肤之感，不要忧虑自己无能无用。
->
-> 纵使天空无穷远，但还是祝看到这段话的人保持热爱：能站在今天已经足够幸运，惟愿你能分享我对世界的爱。
-
-## License
-
-[MIT](LICENSE) © 2026 we1l
+[MIT License](LICENSE) © 2026 we1l
